@@ -5,11 +5,13 @@ const path = require("path");
 const app = express();
 app.use(bodyParser.json());
 const cors = require("cors");
+const sharp = require("sharp");
 
 // Enable CORS to allow requests from your frontend
 app.use(cors());
 
-const downloadImages = async (url, format) => {
+const downloadImages = async (url) => {
+
   if (!url) {
     console.error("Error: URL is undefined or empty.");
     return;
@@ -55,7 +57,7 @@ const downloadImages = async (url, format) => {
       const response = await fetch(imageUrl);
       const buffer = await response.arrayBuffer();
       const base64String = Buffer.from(buffer).toString("base64");
-      imageBase64Array.push(`data:image/${format};base64,${base64String}`);
+      imageBase64Array.push(`data:image/jpeg};base64,${base64String}`);
     }
 
     await browser.close();
@@ -77,7 +79,7 @@ app.post("/api/download-images", async (req, res) => {
   const { url, format } = req.body;
 
   try {
-    const imageBase64Array = await downloadImages(url, format);
+    const imageBase64Array = await downloadImages(url);
     res.json(imageBase64Array);
   } catch (error) {
     console.error(error);

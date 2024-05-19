@@ -147,6 +147,8 @@
           event.preventDefault();
 
           const url = document.getElementById("urlInput").value;
+          const imageFormat = document.getElementById("imageFormat").value;
+          console.log(url, imageFormat);
 
           // Show loader
           document.getElementById("loader").classList.remove("hidden");
@@ -161,7 +163,7 @@
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ url }),
+              body: JSON.stringify({url}),
             });
 
             if (!response.ok) {
@@ -172,7 +174,7 @@
 
             const imageUrls = await response.json();
             document.getElementById("loadertext").textContent="Showing results:";
-            displayImages(imageUrls);
+            displayImages(imageUrls,imageFormat);
 
             // Hide loader
             document.getElementById("loader").classList.add("hidden");
@@ -189,7 +191,7 @@
           }
         });
 
-      function displayImages(imageUrls) {
+      function displayImages(imageUrls,format) {
         const imageContainer = document.getElementById("imageContainer");
         const buttonContainer = document.getElementById("buttonContainer");
         imageContainer.innerHTML = "";
@@ -211,7 +213,7 @@
           const imgPromises = imageUrls.map(async (url, index) => {
             const response = await fetch(url);
             const imgBlob = await response.blob();
-            zip.file(`image_${index}.jpg`, imgBlob);
+            zip.file(`image_${index}.${format}`, imgBlob);
           });
           await Promise.all(imgPromises);
           const content = await zip.generateAsync({ type: "blob" });
