@@ -15,13 +15,13 @@ const downloadImages = async (url) => {
     console.error("Error: URL is undefined or empty.");
     return;
   }
+  const options = {
+    headless: true,
+    ignoreHTTPSErrors: true,
+  };
+
+  const browser = await puppeteer.launch(options);
   try {
-    const options = {
-      headless: true,
-      ignoreHTTPSErrors: true,
-    };
-    
-    const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
     console.log(`Navigating to URL: ${url}`);
 
@@ -63,20 +63,19 @@ const downloadImages = async (url) => {
       const base64String = Buffer.from(buffer).toString("base64");
       imageBase64Array.push(`data:image/jpeg};base64,${base64String}`);
     }
-
-    await browser.close();
-
     return imageBase64Array;
   } catch (error) {
     console.error(`Error downloading images from ${url}:`, error);
     throw error;
+  } finally {
+    await browser.close();
   }
 };
 
 app.use(express.static(path.join(__dirname, "./index.html")));
-const PORT = process.env.PORT || 5500;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+const port = process.env.PORT || 4000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
 
 app.post("/api/download-images", async (req, res) => {
@@ -95,5 +94,4 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "./index.html"));
 });
 
-module.exports = app;
 
