@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
+      defer
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <title>Daraz Product Image Downloader</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      
+      }
+
+      h1 {
+        color: #333;
+      }
+
+      form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+      }
+
+      input[type="url"] {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      select {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      button {
+        width: auto;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background: #28a745;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #218838;
+      }
+
+      .images {
+      margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .images img {
+        max-width: 150px;
+        height: 150px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+      }
+      #imageContainer {
+        display: flex;
+        flex-direction: row;
+        height: auto;
+      }
+      .Container {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 10px;
+        width: 80%;
+        margin-bottom: 20px;
+      }
+      #loader {
+        border: 16px solid #79c2cc; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 2s linear infinite;
+        margin: auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Daraz product Image Downloader:</h1>
+    <form id="urlForm">
+      <input
+        type="url"
+        id="urlInput"
+        placeholder="Enter Daraz product URL"
+        required
+      />
+      <select id="imageFormat">
+        <option value="webp">WebP</option>
+        <option value="jpeg">JPEG</option>
+        <option value="png">PNG</option>
+      </select>
+      <button type="submit">Get Images</button>
+    </form>
+    <h3 id="loadertext" class="hidden">Getting images...</h3>
+    <div id="loader" class="hidden"></div>
+    <div class="Container" id="Container">
+      <div class="images" id="imageContainer"></div>
+      <div id="buttonContainer"></div>
+    </div>
+
+
+    <script>
+      document
+        .getElementById("urlForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const url = document.getElementById("urlInput").value;
+
+          // Show loader
+          document.getElementById("loader").classList.remove("hidden");
+          document.getElementById("loadertext").classList.remove("hidden");
+          document.getElementById("loadertext").textContent="Getting images";
+
+
+          // Make an API call to your Express server to download images
+          try {
+            const response = await fetch("/api/download-images", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ url }),
+            });
+
+            if (!response.ok) {
+              document.getElementById("loadertext").textContent="Invalid url!";
+              throw new Error("Network response was not ok, or invalid url");
+            }
+
+
+            const imageUrls = await response.json();
+            document.getElementById("loadertext").textContent="Showing results:";
+            displayImages(imageUrls);
+
+            // Hide loader
+            document.getElementById("loader").classList.add("hidden");
+      
+          } catch (error) {
+            console.error(
+              "There was a problem with the fetch operation:",
+              error
+            );
+
+            // Hide loader
+            document.getElementById("loader").classList.add("hidden");
+            
+          }
+        });
+
+      function displayImages(imageUrls) {
+        const imageContainer = document.getElementById("imageContainer");
+        const buttonContainer = document.getElementById("buttonContainer");
+        imageContainer.innerHTML = "";
+        buttonContainer.innerHTML = "";
+        
+        // Clear existing images
+
+        imageUrls.forEach((src) => {
+          const img = document.createElement("img");
+          img.src = src;
+          imageContainer.appendChild(img);
+        });
+
+
+        const downloadButton = document.createElement("button");
+        downloadButton.textContent = "Download All";
+        downloadButton.addEventListener("click", async () => {
+          const zip = new JSZip();
+          const imgPromises = imageUrls.map(async (url, index) => {
+            const response = await fetch(url);
+            const imgBlob = await response.blob();
+            zip.file(`image_${index}.jpg`, imgBlob);
+          });
+          await Promise.all(imgPromises);
+          const content = await zip.generateAsync({ type: "blob" });
+          saveAs(content, "images.zip");
+        });
+        buttonContainer.appendChild(downloadButton);
+      }
+    </script>
+  </body>
+</html> 
+
