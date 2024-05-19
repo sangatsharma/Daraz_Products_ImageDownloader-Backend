@@ -5,7 +5,7 @@ const path = require("path");
 const app = express();
 app.use(bodyParser.json());
 const cors = require("cors");
-const sharp = require("sharp");
+
 
 // Enable CORS to allow requests from your frontend
 app.use(cors());
@@ -79,8 +79,12 @@ app.listen(port, () => {
 });
 
 app.post("/api/download-images", async (req, res) => {
-  const { url, format } = req.body;
-
+  const { url} = req.body;
+  const apiKey = req.headers['x-api-key'];
+    if (apiKey !== 'test-API-KEY') { 
+      res.status(401).json({ message: 'Unauthorized access !' }); 
+      return;// Return unauthorized status
+    } 
   try {
     const imageBase64Array = await downloadImages(url);
     res.json(imageBase64Array);
