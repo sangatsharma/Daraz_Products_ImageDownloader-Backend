@@ -25,7 +25,7 @@ const downloadImages = async (url) => {
     const page = await browser.newPage();
     console.log(`Navigating to URL: ${url}`);
 
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 10000 });
+    await page.goto(url);
 
     // Wait for the images to load (you might need to adjust the selector)
     await page.waitForSelector(
