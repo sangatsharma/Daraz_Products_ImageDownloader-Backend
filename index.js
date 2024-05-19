@@ -83,10 +83,12 @@ app.post("/api/download-images", async (req, res) => {
   const apiKey = req.headers['x-api-key'];
     if (apiKey !== 'test-API-KEY') { 
       res.status(401).json({ message: 'Unauthorized access !' }); 
+      console.log('Unauthorized access attempted!');
       return;// Return unauthorized status
     } 
   try {
     const imageBase64Array = await downloadImages(url);
+    console.log(`Responded ${imageBase64Array.length} images`);
     res.json(imageBase64Array);
   } catch (error) {
     console.error(error);
