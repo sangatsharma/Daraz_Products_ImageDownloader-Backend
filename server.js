@@ -11,13 +11,17 @@ const sharp = require("sharp");
 app.use(cors());
 
 const downloadImages = async (url) => {
-
   if (!url) {
     console.error("Error: URL is undefined or empty.");
     return;
   }
   try {
-    const browser = await puppeteer.launch();
+    const options = {
+      headless: true,
+      ignoreHTTPSErrors: true,
+    };
+    
+    const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
     console.log(`Navigating to URL: ${url}`);
 
@@ -92,3 +96,4 @@ app.get("/", (req, res) => {
 });
 
 module.exports = app;
+
