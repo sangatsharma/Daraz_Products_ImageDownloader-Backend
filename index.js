@@ -30,7 +30,7 @@ const downloadImages = async (url) => {
     // Wait for the images to load (you might need to adjust the selector)
     await page.waitForSelector(
       ".next-slick-list .next-slick-track .next-slick-slide .item-gallery__image-wrapper img",
-      { timeout: 30000 }
+      { timeout: 8000 }
     );
 
     // Get the image URLs
